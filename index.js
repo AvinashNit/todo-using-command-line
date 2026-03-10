@@ -2,43 +2,44 @@ const {Command}=require("commander");
 const program=new Command();
 const fs=require("fs");
 
+
 program.name("todo-using-cli").description("A simple todo app using cli").version("1.0.0");
 
-program
-.command("add <task>")
+program.command("add <task>")
 .description("Add a new task")
 .action((task)=>{
-    const tasks=fs.readFileSync("tasks.txt","utf-8").split("\n").filter(Boolean);
-    tasks.push(task);
-    fs.writeFileSync("tasks.txt",tasks.join("\n")   );
-    console.log(`Task added: ${task}`);
+    const content=fs.readFileSync("todo.json","utf-8");
+    data=content?JSON.parse(content):[];
+    data.push(task);
+    fs.writeFileSync("todo.json",JSON.stringify(data));
+    console.log("Task added successfully");
 })
+
+
 program.command("list")
 .description("List all tasks")
 .action(()=>{
-    console.log(fs.readFileSync("tasks.txt","utf-8"));
+    const content=fs.readFileSync("todo.json","utf-8")
+    console.log(content?JSON.parse(content):[]);
 })
-program.command("delete <taskNumber>")
-.description("Delete a task by its number")
-.action((taskNumber)=>{ 
-    const tasks=fs.readFileSync("tasks.txt","utf-8").split("\n").filter(Boolean);
-    const taskIndex=parseInt(taskNumber)-1;
-    if(taskIndex>=0 && taskIndex<tasks.length)
-    {
-        const removedTask=tasks.splice(taskIndex,1);
-        fs.writeFileSync("tasks.txt",tasks.join("\n"));
-        console.log(`Task deleted: ${removedTask}`);
-    }
-    else
-    {
-        console.log("Invalid task number");
-    }
-});
+
+program.command("delete <index>")
+.description("Delete a task")
+.action((index)=>{
+            const content=fs.readFileSync("todo.json","utf-8");
+            data=content?JSON.parse(content):[];
+            data.splice(index-1,1);       
+            fs.writeFileSync("todo.json",JSON.stringify(data));
+            console.log("Task deleted successfully");
+})
+
 program.command("clear")
-.description("Clear all tasks")
+.description("clear all tasks")
 .action(()=>{
-    fs.writeFileSync("tasks.txt","");
-    console.log("All tasks cleared");
+    fs.writeFileSync("todo.json","");
+    console.log("All tasks cleared successfully");
 })
-program.parse(process.argv)
+
+
+program.parse(process.argv);
 
