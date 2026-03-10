@@ -5,29 +5,27 @@ const fs=require("fs");
 program.name("todo-using-cli").description("A simple todo app using cli").version("1.0.0");
 
 program
-.option("-a, --add <task>","Add a new task")
-.option("-l, --list","List all tasks")
-.option("-d, --delete <taskNumber>","Delete a task by its number");
-program.parse(process.argv)
-const options =program.opts();
-if(options.add)
-{
+.command("add <task>")
+.description("Add a new task")
+.action((task)=>{
     const tasks=fs.readFileSync("tasks.txt","utf-8").split("\n").filter(Boolean);
-    tasks.push(options.add);
-    fs.writeFileSync("tasks.txt",tasks.join("\n"));
-    console.log(`Task added: ${options.add}`);
-}
-else if(options.list)
-{
-   console.log(fs.readFileSync("tasks.txt","utf-8"));
-}
-else if(options.delete)
-{
+    tasks.push(task);
+    fs.writeFileSync("tasks.txt",tasks.join("\n")   );
+    console.log(`Task added: ${task}`);
+})
+program.command("list")
+.description("List all tasks")
+.action(()=>{
+    console.log(fs.readFileSync("tasks.txt","utf-8"));
+})
+program.command("delete <taskNumber>")
+.description("Delete a task by its number")
+.action((taskNumber)=>{ 
     const tasks=fs.readFileSync("tasks.txt","utf-8").split("\n").filter(Boolean);
-    const taskNumber=parseInt(options.delete);
-    if(taskNumber>0 && taskNumber<=tasks.length)
+    const taskIndex=parseInt(taskNumber)-1;
+    if(taskIndex>=0 && taskIndex<tasks.length)
     {
-        const removedTask=tasks.splice(taskNumber-1,1);
+        const removedTask=tasks.splice(taskIndex,1);
         fs.writeFileSync("tasks.txt",tasks.join("\n"));
         console.log(`Task deleted: ${removedTask}`);
     }
@@ -35,8 +33,12 @@ else if(options.delete)
     {
         console.log("Invalid task number");
     }
-}
-else
-{
-    console.log("No action specified");
-}
+});
+program.command("clear")
+.description("Clear all tasks")
+.action(()=>{
+    fs.writeFileSync("tasks.txt","");
+    console.log("All tasks cleared");
+})
+program.parse(process.argv)
+
